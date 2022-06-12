@@ -12,7 +12,7 @@ $$.send_ajax = function(opt) {
 		if ('dialog' in opt && !opt.dialog) return;
 
 		let msg = '';
-		if (h in Object) {
+		if (h) {
 			if (h.ret && h._develop) msg += 'ret = ' + h.ret;
 			if (h.msg)    msg += '<p>' + self.tag_esc(h.msg.toString())    + '</p>';
 			if (h.errs) {
