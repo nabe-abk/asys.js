@@ -3,6 +3,8 @@
 #
 NAME       = asys
 OUT_DIR    = ..
+OUT_DIR2   = ../without-jQuery
+JQUERY     = jquery-3.6.0.js
 
 COMPRESSOR = terser
 OPTIONS    = -c -m --comments '/^!!/' --source-map "includeSources,url='$(NAME).min.js.map'"
@@ -11,9 +13,10 @@ OUTPUT	   = $(OUT_DIR)/$(NAME).min.js
 MAP_FILE   = $(OUT_DIR)/$(NAME).min.map
 HTML       = $(OUT_DIR)/$(NAME)-js-load.html
 
-FILES = 00_start.js		\
-	jquery-3.6.0.js		\
-	10_global-ext.js	\
+OUTPUT2	   = $(OUT_DIR2)/$(NAME).min.js
+MAP_FILE2  = $(OUT_DIR2)/$(NAME).min.map
+
+FILES =	10_global-ext.js	\
 	11_jquery-ext.js	\
 	20_PrefixStorage.js	\
 	21_adiary-ui.js		\
@@ -27,15 +30,18 @@ FILES = 00_start.js		\
 	80_defer.js		\
 	99_run_init.js
 
-all:  $(OUTPUT) $(HTML)
+all:  $(OUTPUT) $(OUTPUT2) $(HTML)
 html: $(HTML)
 
-$(OUTPUT): $(FILES) Makefile
-	$(COMPRESSOR) $(FILES) $(OPTIONS) -o $(OUTPUT)
+$(OUTPUT):  00_start.js $(JQUERY) $(FILES) Makefile
+	$(COMPRESSOR) 00_start.js $(JQUERY) $(FILES) $(OPTIONS) -o $(OUTPUT)
+
+$(OUTPUT2): 00_start_without_jq.js $(FILES) Makefile
+	$(COMPRESSOR) 00_start_without_jq.js $(FILES) $(OPTIONS) -o $(OUTPUT2)
 
 $(HTML): Makefile
 	echo '<@7>'			>$(HTML);
 	echo '<$$local(dir) = argv#0>'	>>$(HTML);
-	for file in $(FILES); do \
+	for file in $(JQUERY) $(FILES); do \
 		echo "<script defer src=\"<@Basepath><@dir>$$file?<@get_lastmodified(dir . '$$file')>\"></script>" >>$(HTML); \
 	done
