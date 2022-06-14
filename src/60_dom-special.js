@@ -98,8 +98,8 @@ $$.dom_init( function($R) {
 		$obj.data('js-ajax-stop', true);
 		$obj.prop('disabled', true);
 
-		const start_func = $obj.data('ajax_start');
-		const comp_func  = $obj.data('ajax_complete');
+		const start_func = $obj.data('start');
+		const comp_func  = $obj.data('complete');
 		if (typeof(start_func) === 'function') start_func($obj);
 
 		self.send_ajax({
