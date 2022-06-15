@@ -52,11 +52,26 @@ $$.init(function(){
 //////////////////////////////////////////////////////////////////////////////
 // file upload button
 //////////////////////////////////////////////////////////////////////////////
+// <button class="js-file-btn" data-target="#fileup">
+// <input type="file" id="fileup" style="display:none" data-target="#file-list">
+// <span id="file-list"></span>
+//
 $$.init(function(){
 	this.$body.on('click', 'button.js-file-btn', function(evt) {
 		const $obj = $(evt.target);
 		const $tar = $($obj.data('target'));
 		if (! $tar.length ) return;
+
+
+		if ($tar.data('target') && !$tar.data('--regist-change-evt')) {
+			$tar.data('--regist-change-evt', true);
+			$tar.on('change', function(evt){
+				const $span = $tar.rootfind( $tar.data('target') );
+				const file  = $tar.val().replace(/^.*?([^\\\/]*)$/, "$1");
+				$span.text( file );
+			})
+		}
+
 		$tar.click();
 	});
 });
