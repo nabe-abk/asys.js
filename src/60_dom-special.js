@@ -94,9 +94,11 @@ $$.dom_init( function($R) {
 			return $infile.length ? (new FormData($obj[0])) : $obj.serialize();
 		})();
 
-		if ($obj.data('js-ajax-stop')) return;
-		$obj.data('js-ajax-stop', true);
+		if ($obj.data('--js-ajax-stop')) return;
+		$obj.data('--js-ajax-stop', true);
 		$obj.prop('disabled', true);
+		if ($obj.data('overlay'))
+			$obj.data('--overlay-obj', $.adiaryOverlayShow());
 
 		const start_func = $obj.data('start');
 		const comp_func  = $obj.data('complete');
@@ -143,8 +145,9 @@ $$.dom_init( function($R) {
 			},
 			complete: function(h) {
 				if (typeof(comp_func) === 'function') comp_func($obj);
-				$obj.data('js-ajax-stop', false);
+				$obj.data('--js-ajax-stop', false);
 				$obj.prop('disabled', false);
+				if ($obj.data('--overlay-obj')) $.adiaryOverlayHide($obj.data('--overlay-obj'));
 			}
 		});
 		return false;

@@ -10,8 +10,6 @@
 $.fn.adiaryDialog = function(opt) {
 	if ( opt === 'open' )	return this.adiaryDialogOpen();
 	if ( opt === 'close' )	return this.adiaryDialogClose();
-	if (!$.adiary_ui_zindex)
-		$.adiary_ui_zindex = 1000;
 
 	const self = this;
 	///////////////////////////////////////////////////////////////////////
@@ -172,16 +170,33 @@ $.fn.adiaryDialogClose = function() {
 };
 
 ///////////////////////////////////////////////////////////////////////////////
+// overlay function
+///////////////////////////////////////////////////////////////////////////////
+$.adiaryOverlay = function() {
+	return $('<div>').addClass('ui-overlay aui-overlay');
+};
+
+$.adiaryOverlayShow = function() {
+	const $overlay = $.adiaryOverlay();
+	$.adiaryUIAppend($overlay);
+	return $overlay;
+};
+$.adiaryOverlayHide = function($overlay) {
+	$.adiaryUIRemove($overlay);
+	return $overlay;
+};
+
+///////////////////////////////////////////////////////////////////////////////
 // dialog sub functions
 ///////////////////////////////////////////////////////////////////////////////
-$.fn.adiaryUIAppend = function($obj) {
-	const data = this.adiaryUIData();
+$.adiaryUIAppend = $.fn.adiaryUIAppend = function($obj) {
+	if (!$.adiary_ui_zindex) $.adiary_ui_zindex = 1000;
 	$obj.css('z-index', $.adiary_ui_zindex++);
 	$('body').append( $obj );
 };
 
-$.fn.adiaryUIRemove = function($obj) {
-	$.adiary_ui_zindex--;
+$.adiaryUIRemove = $.fn.adiaryUIRemove = function($obj) {
+	if ($.adiary_ui_zindex) $.adiary_ui_zindex--;
 	$obj.remove();
 };
 
