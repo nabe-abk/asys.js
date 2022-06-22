@@ -41,6 +41,54 @@ $.fn.existsData = function(name) {
 };
 
 ////////////////////////////////////////////////////////////////////////////////
+// parse form to hash
+////////////////////////////////////////////////////////////////////////////////
+$.fn.parseFormHash = function(cancel) {
+	return this._parseForm(false, cancel);
+}
+$.fn.parseFormFD = function(cancel) {
+	return this._parseForm(true,  cancel);
+}
+$.fn._parseForm = function(fdmode, cancel) {
+	const data = fdmode ? new FormData : {};
+	const $cancel = (cancel instanceof jQuery) ? cancel
+		: (cancel === undefined ? cancel : $(cancel));
+
+	this.find('input, select, textarea').each(function(idx, dom){
+		if (dom.disabled) return;
+		if (dom.type == 'checkbox' && !dom.checked) return;
+		if ($cancel && $cancel.find(dom).length) return;
+
+		const name = dom.name;
+
+		// file
+		if (dom.tagName == 'INPUT' && dom.type == 'file') {
+			if (!fdmode) return;
+			const files = dom.files;
+			for(let i=0; i<files.length; i++)
+				data.append(name, files[i]);
+			return;
+		}
+		if (name == undefined || name == '') return;
+		if (fdmode)
+			data.append(name, $(dom).val());
+		else
+			data[name] = $(dom).val();
+	});
+	return data;
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// any serialize
+////////////////////////////////////////////////////////////////////////////////
+$.fn.anySerialize = function(){
+	return this.find('input, textarea, select').serialize();
+}
+$.fn.anySerializeArray = function(){
+	return this.find('input, textarea, select').serializeArray();
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // Function calls sequentially when an event occurs
 ////////////////////////////////////////////////////////////////////////////////
 $.fn.onSequence = function(_event, _priority, _func) {
