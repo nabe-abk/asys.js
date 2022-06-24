@@ -147,7 +147,7 @@ $$.dom_init( function($R) {
 				if (typeof(comp_func) === 'function') comp_func($obj);
 				$obj.data('--js-ajax-stop', false);
 				$obj.prop('disabled', false);
-				if ($obj.data('--overlay-obj')) $.adiaryOverlayHide($obj.data('--overlay-obj'));
+				if ($obj.data('--overlay-obj')) $obj.data('--overlay-obj').remove();
 			}
 		});
 		return false;

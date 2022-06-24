@@ -1,22 +1,31 @@
 //##############################################################################
 // adiary UI
-//							(C)2019 nabe@abk
+//							(C)2019-2022 nabe@abk
 //##############################################################################
+$._adiary_ui = {
+	zindexStart:	1000,
+	dialogs:	[],
+	objs:		[],
+	escHook:	false
+};
 ////////////////////////////////////////////////////////////////////////////////
-// dialog
+// dialog, only modal mode.
 ////////////////////////////////////////////////////////////////////////////////
-// The "modal" option ignore, this option exists on jQuery UI.
-//
 $.fn.adiaryDialog = function(opt) {
+	const self = this;
 	if ( opt === 'open' )	return this.adiaryDialogOpen();
 	if ( opt === 'close' )	return this.adiaryDialogClose();
 
-	const self = this;
+	const useDialog = opt.dialog;
+
 	////////////////////////////////////////////////////////////////////////
-	// init dialog div
+	// init dialog
 	////////////////////////////////////////////////////////////////////////
 	const $win = $(window);
-	const $dialog = $('<div>').addClass('ui-dialog aui-dialog');
+	const $dialog = $(useDialog ? '<dialog>' : '<div>').addClass('ui-dialog aui-dialog');
+	if (useDialog) {
+		$dialog.attr('method', 'dialog');
+	}
 	const width = opt.width     || 300;
 	const min_h = opt.minHeight || 150;
 	const x = $win.scrollLeft() + ($win.width()  - width )/2;
@@ -56,13 +65,19 @@ $.fn.adiaryDialog = function(opt) {
 	////////////////////////////////////////////////////////////////////////
 	// ESC
 	////////////////////////////////////////////////////////////////////////
-	if (!('closeOnEscape ' in opt) || opt.closeOnEscape) {
-		$dialog.on('keydown', function(evt){
-			if (evt.which != 27) return;	// ESC
+	if (!('closeOnEscape' in opt) || opt.closeOnEscape) {
+		const dialogs = $._adiary_ui.dialogs = $.adiaryUIFilterExists( $._adiary_ui.dialogs );
+		dialogs.push( $dialog );
 
-			if (opt.exit) opt.exit();
-			self.adiaryDialogClose();
-		});
+		if (!$._adiary_ui.escHook) {
+			$._adiary_ui.escHook = true;
+			$(window).on('keydown', function(evt){
+				if (evt.which != 27)  return;	// ESC
+
+				const $dialog = $._adiary_ui.dialogs.pop();
+				if ($dialog) $dialog.find('div.ui-dialog-titlebar .ui-icon-closethick').click();
+			});
+		}
 	}
 
 	////////////////////////////////////////////////////////////////////////
@@ -98,25 +113,28 @@ $.fn.adiaryDialog = function(opt) {
 	////////////////////////////////////////////////////////////////////////
 	// disable tab indexes
 	////////////////////////////////////////////////////////////////////////
-	const tabs = [];
-	data.tabs = tabs;
-	$('a, input, button, select, textarea').each(function(idx,dom){
-		const $obj = $(dom);
-		tabs.push({
-			$obj:	$obj,
-			index:	$obj.attr('tabindex')
-		})
-		$obj.attr('tabindex', -1);
-	});
-	if (document.activeElement) $(document.activeElement).blur();
+	if (!useDialog) {
+		const tabs = [];
+		data.tabs = tabs;
+		$('a, input, button, select, textarea').each(function(idx,dom){
+			const $obj = $(dom);
+			tabs.push({
+				$obj:	$obj,
+				index:	$obj.attr('tabindex')
+			})
+			$obj.attr('tabindex', -1);
+		});
+		if (document.activeElement) $(document.activeElement).blur();
+	}
 
 	////////////////////////////////////////////////////////////////////////
 	// append dialog obj
 	////////////////////////////////////////////////////////////////////////
-	data.$overlay = $('<div>').addClass('ui-overlay aui-overlay');
-	data.$dialog  = $dialog;
+	if (!useDialog) data.$overlay = $('<div>').addClass('ui-overlay aui-overlay');
+	data.$dialog     = $dialog;
 	data.open        = opt.open;
 	data.beforeClose = opt.beforeClose;
+	data.useDialog   = useDialog;
 
 	if (opt && !opt.autoOpen && 'autoOpen' in opt) return this;
 
@@ -130,6 +148,8 @@ $.fn.adiaryDialogOpen = function() {
 
 	this.adiaryUIAppend( data.$overlay );
 	this.adiaryUIAppend( data.$dialog  );
+
+	if (data.useDialog) $dialog[0].showModal();
 
 	// set css
 	const h  = this.height();
@@ -153,17 +173,22 @@ $.fn.adiaryDialogClose = function() {
 	const data = this.adiaryUIData('dialog');
 	if (data.beforeClose) data.beforeClose.call( null, this );
 
-	this.adiaryUIRemove( data.$overlay );
-	this.adiaryUIRemove( data.$dialog  );
+	if (data.$overlay) data.$overlay.remove();
+	data.$dialog.remove();
 	if (data.$restore && data.$restore.length) data.$restore.append( this );
 
+	data.$overlay=null;
+	data.$dialog =null;
+
 	// recovery tab index
-	const tabs = data.tabs;
-	for(let i in tabs) {
-		let tab = tabs[i];
-		let idx = tab.index;
-		if (idx === undefined) tab.$obj.removeAttr('tabindex');
-				else   tab.$obj.attr('tabindex', idx)
+	if (!data.useDialog) {
+		const tabs = data.tabs;
+		for(let i in tabs) {
+			let tab = tabs[i];
+			let idx = tab.index;
+			if (idx === undefined) tab.$obj.removeAttr('tabindex');
+					else   tab.$obj.attr('tabindex', idx)
+		}
 	}
 
 	return this;
@@ -181,23 +206,25 @@ $.adiaryOverlayShow = function() {
 	$.adiaryUIAppend($overlay);
 	return $overlay;
 };
-$.adiaryOverlayHide = function($overlay) {
-	$.adiaryUIRemove($overlay);
-	return $overlay;
-};
 
 ////////////////////////////////////////////////////////////////////////////////
 // dialog sub functions
 ////////////////////////////////////////////////////////////////////////////////
 $.adiaryUIAppend = $.fn.adiaryUIAppend = function($obj) {
-	if (!$.adiary_ui_zindex) $.adiary_ui_zindex = 1000;
-	$obj.css('z-index', $.adiary_ui_zindex++);
-	$('body').append( $obj );
-};
+	if (!$obj || $obj.length !== 1) return;
 
-$.adiaryUIRemove = $.fn.adiaryUIRemove = function($obj) {
-	if ($.adiary_ui_zindex) $.adiary_ui_zindex--;
-	$obj.remove();
+	let   zindex = $._adiary_ui.zindexStart -1;
+	const objs   = $.adiaryUIFilterExists( $._adiary_ui.objs, function($obj){
+		let zi = $obj.adiaryUIData('Append', 'zindex');
+		if (zindex<zi) zindex=zi;
+	});
+	objs.push( $obj );
+	$._adiary_ui.objs = objs;
+
+	$obj.css('z-index', ++zindex);
+	$obj.adiaryUIData('Append', 'zindex', zindex);
+
+	$('body').append( $obj );
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -301,3 +328,18 @@ $.fn.adiaryUIData = function(name, key, val) {
 	if (arguments.length==3) data[key] = val;
 	return data;
 };
+
+////////////////////////////////////////////////////////////////////////////////
+// filter function
+////////////////////////////////////////////////////////////////////////////////
+$.adiaryUIFilterExists = function($objs, callback) {
+	const $ary  = [];
+	const $body = $('body');
+
+	for(let k in $objs) {
+		if (! $body.find($objs[k]).length) continue;
+		$ary.push($objs[k]);
+		if (callback) callback($objs[k]);
+	}
+	return $ary;
+}

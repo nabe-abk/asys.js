@@ -39,7 +39,7 @@ $$.show_dialog = function(h, _arg, callback) {
 			}
 		},
 		exit: function(){
-			callback( false )
+			if (callback) callback( false )
 		}
 	});
 	return false;
@@ -62,11 +62,11 @@ $$.confirm = function(h, callback) {
 	let btn = {};
 	btn[ h.btn_ok || this.msg('ok') ] = function(){
 		$div.adiaryDialog('close');
-		callback(true);
+		if (callback) callback(true);
 	};
 	btn[ h.btn_cancel || this.msg('cancel') ] = function(){
 		$div.adiaryDialog('close');
-		callback(false);
+		if (callback) callback(false);
 	};
 	$div.adiaryDialog({
 		modal: true,
@@ -78,7 +78,7 @@ $$.confirm = function(h, callback) {
 			if (h.focus == 'cancel') $bp.find('button:eq(1)').focus();
 		},
 		exit: function(){
-			callback(false);
+			if (callback) callback(false);
 		}
 	});
 }

@@ -51,7 +51,7 @@ $.fn.parseFormFD = function(cancel) {
 }
 $.fn._parseForm = function(fdmode, cancel) {
 	const data = fdmode ? new FormData : {};
-	const $cancel = (cancel instanceof jQuery) ? cancel
+	const $cancel = (cancel instanceof $) ? cancel
 		: (cancel === undefined ? cancel : $(cancel));
 
 	this.find('input, select, textarea').each(function(idx, dom){
