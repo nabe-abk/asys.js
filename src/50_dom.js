@@ -184,3 +184,53 @@ $$.init(function(){
 	});
 })
 
+////////////////////////////////////////////////////////////////////////////////
+// sortable table
+////////////////////////////////////////////////////////////////////////////////
+$$.init(function(){
+	const self  = this;
+
+	this.$body.on('click', 'table.js-sortablex thead', function(evt){
+		const $o1  = $(evt.target).filter('th,td');
+		const $obj = $o1.length ? $o1 : $(evt.target).parentsOne('th,td');
+		if ($obj.hasClass('disable-sort')) return;
+
+		let cnt=0;
+		let $x = $obj;
+		while($x.length) {
+			$x = $x.prev();
+			cnt++;
+		}
+
+		const $tbody  = $obj.parentsOne('table').children('tbody');
+		const td_nth  = 'td:nth-child(' + cnt + ')';
+		const reverse = $tbody.data('_sortable_prev_cnt') == cnt;
+		$tbody.data('_sortable_prev_cnt', reverse ? -1 : cnt);
+
+		$tbody.each(function(idx,dom){
+			const $tbody = $(dom);
+			let   isNum  = true;
+			const lines  = [];
+			$tbody.children('tr').each(function(i2,tr){
+				const $tr = $(tr);
+				const $td = $tr.children(td_nth);
+				const val = $td.existsData('sort') ? $td.data('sort') : $td.text().replace(/^\s+/, '').replace(/\s+$/, '');
+				const num = Number(val);
+				if (isNaN(num)) isNum = false;
+
+				lines.push({
+					val:	val,
+					num:	num,
+					$tr:	$tr
+				});
+			});
+
+			if (isNum) lines.sort(function(a,b){ return a.num - b.num; });
+			      else lines.sort(function(a,b){ return a.val===b.val ? 0 : a.val < b.val; });	// Do not work IE11
+			if (reverse) lines.reverse();
+
+			$tbody.empty();
+			for(let i in lines) $tbody.append(lines[i].$tr);
+		});
+	});
+})
