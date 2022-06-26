@@ -6,4 +6,4 @@ Original sources is developmented for [adiary](https://github.com/nabe-abk/adiar
 
 # jQuery
 
-This library contaion [jQuery source](https://github.com/nabe-abk/asys.js/blob/master/src/jquery-3.4.1.js), under the MIT license.
+This library contain [jQuery source](https://github.com/nabe-abk/asys.js/blob/master/src/jquery-3.4.1.js), under the MIT license.
