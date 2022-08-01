@@ -19,8 +19,10 @@ $$.send_ajax = function(opt) {
 				const ary = [];
 				const e = h.errs;
 				const o = e._order || Object.keys(e);
-				for(let i in o)
+				for(let i in o) {
+					if (e[o[i]]=='') continue;
 					ary.push(e[o[i]]);
+				}
 				msg += '<p class="ni">' + ary.join("<br>") + '</p>';
 			}
 			if (h._debug) msg += '<p class="ni">' + h._debug.replace(/\n/g, '<br>') + '</p>';
