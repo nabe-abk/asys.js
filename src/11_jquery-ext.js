@@ -168,7 +168,7 @@ $.fn.dndEmulation = function(opt){
 			const e = make_mouse_event('mousedown', evt, evt.touches[0]);
 			$( prev ).trigger(e);
 
-			// ある程度時間が経過しないときは処理を無効化する。
+			// Disable the process if it does not pass a certain amount of time.
 			flag  = false;
 			timer = setTimeout(function(){
 				timer = false;
