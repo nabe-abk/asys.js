@@ -4,7 +4,7 @@
 NAME       = asys
 OUT_DIR    = ..
 OUT_DIR2   = ../without-jQuery
-JQUERY     = jquery-3.6.0.js
+JQUERY     = jquery-3.6.2.js
 
 COMPRESSOR = terser
 OPTIONS    = -c -m --comments '/^!!/' --source-map "includeSources,url='$(NAME).min.js.map'"
