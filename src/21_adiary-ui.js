@@ -26,14 +26,16 @@ $.fn.adiaryDialog = function(opt) {
 	if (useDialog) {
 		$dialog.attr('method', 'dialog');
 	}
-	const width = opt.width     || 300;
-	const min_h = opt.minHeight || 150;
-	const x = $win.scrollLeft() + ($win.width()  - width )/2;
+	const min_w = opt.minWidth  || 200;
+	const min_h = opt.minHeight || 200;
+	let   width = opt.width     || 300;
+	if (opt.width!==undefined && opt.width.toString()==='0') width='auto';
 	$dialog.css({
 		width:		width,
-		minHeight:	min_h,
-		left:		x
+		minWidth:	min_w,
+		minHeight:	min_h
 	});
+	if (opt.maxWidth)  $dialog.css('max-width',  opt.maxWidth );
 	if (opt.maxHeight) $dialog.css('max-height', opt.maxHeight);
 	if (opt.dialogClass)
 		$dialog.addClass( opt.dialogClass );
@@ -143,13 +145,14 @@ $.fn.adiaryDialog = function(opt) {
 
 $.fn.adiaryDialogOpen = function() {
 	const data    = this.adiaryUIData('dialog');
+	const $overlay= data.$overlay;
 	const $dialog = data.$dialog;
 	if (!$dialog) throw("Do not open dialog!");
 
+	$overlay.css('visibility', 'hidden');
+	$dialog .css('visibility', 'hidden');
 	this.adiaryUIAppend( data.$overlay );
-	this.adiaryUIAppend( data.$dialog  );
-
-	if (data.useDialog) $dialog[0].showModal();
+	this.adiaryUIAppend( $dialog       );
 
 	// set css
 	const h  = this.height();
@@ -158,11 +161,17 @@ $.fn.adiaryDialogOpen = function() {
 	$dialog.css('height', $dialog.outerHeight());	// needs for calc 100%
 
 	const $win  = $(window);
+	const x = $win.scrollLeft() + ($win.width()  - $dialog.outerWidth() )/2;
 	const y = $win.scrollTop()  + ($win.height() - $dialog.outerHeight())/2;
-	$dialog.css('top', y);
+	$dialog.css({
+		left:	x,
+		top:	y
+	});
 	$dialog.adiaryDraggable({
 		handle: '.ui-dialog-titlebar'
 	});
+	$overlay.css('visibility', 'visible');
+	$dialog .css('visibility', 'visible');
 
 	if (data.open) data.open( null, this );
 
