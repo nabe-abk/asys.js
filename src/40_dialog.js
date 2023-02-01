@@ -172,9 +172,10 @@ $$.form_dialog = function(h) {
 
 	// show dialog
 	div.adiaryDialog({
-		modal: true,
-		width:  this.DialogWidth,
-		minHeight: 100,
+		modal:     true,
+		width:     this.DialogWidth     || -1,
+		minWidth:  this.DialogMinWidth  || 200,
+		minHeight: this.DialogMinHeight || 100,
 		title:   h.title || $('#msg-setting-title').text(),
 		buttons: buttons
 	});

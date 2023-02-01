@@ -27,9 +27,9 @@ $.fn.adiaryDialog = function(opt) {
 		$dialog.attr('method', 'dialog');
 	}
 	const min_w = opt.minWidth  || 200;
-	const min_h = opt.minHeight || 200;
+	const min_h = opt.minHeight || 150;
 	let   width = opt.width     || 300;
-	if (opt.width!==undefined && opt.width.toString()==='0') width='auto';
+	if (width<0) width='auto';
 	$dialog.css({
 		width:		width,
 		minWidth:	min_w,
@@ -135,8 +135,10 @@ $.fn.adiaryDialog = function(opt) {
 	if (!useDialog) data.$overlay = $('<div>').addClass('ui-overlay aui-overlay');
 	data.$dialog     = $dialog;
 	data.open        = opt.open;
+	data.close       = opt.close;
 	data.beforeClose = opt.beforeClose;
 	data.useDialog   = useDialog;
+	data.min_h       = min_h;
 
 	if (opt && !opt.autoOpen && 'autoOpen' in opt) return this;
 
@@ -155,12 +157,11 @@ $.fn.adiaryDialogOpen = function() {
 	this.adiaryUIAppend( $dialog       );
 
 	// set css
-	const h  = this.height();
-	const hf = data.$header.outerHeight() + (data.$footer ? data.$footer.outerHeight() : 0);
-	this.css('height', 'calc(100% - ' + hf + 'px)');
-	$dialog.css('height', $dialog.outerHeight());	// needs for calc 100%
+	const $win = $(window);
+	const hf   = data.$header.outerHeight() + (data.$footer ? data.$footer.outerHeight() : 0);
+	this.css('min-height', (data.min_h    - hf) + 'px');
+	this.css('max-height', ($win.height() - hf) + 'px');
 
-	const $win  = $(window);
 	const x = $win.scrollLeft() + ($win.width()  - $dialog.outerWidth() )/2;
 	const y = $win.scrollTop()  + ($win.height() - $dialog.outerHeight())/2;
 	$dialog.css({
@@ -199,6 +200,7 @@ $.fn.adiaryDialogClose = function() {
 					else   tab.$obj.attr('tabindex', idx)
 		}
 	}
+	if (data.close) data.close.call( null, this );
 
 	return this;
 };
