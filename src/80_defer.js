@@ -7,17 +7,19 @@ $$.init(function(){
 	// css-defer
 	$('link.css-defer').attr('rel', 'stylesheet');
 
-	// script-defer
-	const $scripts = $('script-defer');
-	const line = [];
-	$scripts.each(function(idx, dom) {
-		line[idx] = self.get_line_number(dom);
-	});
-	$scripts.each(function(idx, dom) {
-		const scr     = document.createElement('script');
-		scr.innerHTML = "\n".repeat(line[idx]) + dom.innerHTML;
-		dom.innerHTML = '';
-		dom.appendChild(scr);
+	// script-defer, Run after all js file's $() function
+	$(function(){
+		const $scripts = $('script-defer');
+		const line = [];
+		$scripts.each(function(idx, dom) {
+			line[idx] = self.get_line_number(dom);
+		});
+		$scripts.each(function(idx, dom) {
+			const scr     = document.createElement('script');
+			scr.innerHTML = "\n".repeat(line[idx]) + dom.innerHTML;
+			dom.innerHTML = '';
+			dom.appendChild(scr);
+		});
 	});
 });
 
