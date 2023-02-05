@@ -7,9 +7,8 @@ $$.init(function(){
 	// css-defer
 	$('link.css-defer').attr('rel', 'stylesheet');
 
-	// script-defer, Run after all js file's $() function
-	$(function(){
-		const $scripts = $('script-defer');
+	function run_script(tag) {
+		const $scripts = $(tag);
 		const line = [];
 		$scripts.each(function(idx, dom) {
 			line[idx] = self.get_line_number(dom);
@@ -20,6 +19,13 @@ $$.init(function(){
 			dom.innerHTML = '';
 			dom.appendChild(scr);
 		});
+	}
+	// script-const, Run just time
+	run_script('script-const');
+
+	// script-defer, Run after all js file's $() function
+	$(function(){
+		run_script('script-defer');
 	});
 });
 
