@@ -7,8 +7,8 @@
 $$.send_ajax = function(opt) {
 	const self=this;
 
-	function error_default(err, h) {
-		if (opt.error) opt.error(err, h);
+	function ajax_error(err, h) {
+		if (opt.error) if (!opt.error(err, h)) return;
 		if ('dialog' in opt && !opt.dialog) return;
 
 		let msg = '';
@@ -40,9 +40,9 @@ $$.send_ajax = function(opt) {
 		processData:	false,
 		contentType:	false,
 		dataType:	'json',
-		error:		function(e) { error_default(e); },
+		error:		function(e) { ajax_error(e); },
 		success:	function(h) {
-			if (h.ret != '0' || h._debug) return error_default('', h);
+			if (h.ret != '0' || h._debug) return ajax_error('', h);
 			if (opt.success) opt.success(h);
 		},
 		complete:	opt.complete,

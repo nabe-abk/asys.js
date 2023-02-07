@@ -121,7 +121,7 @@ $$.dom_init( function($R) {
 				const error = $obj.data('error');
 				if (typeof(error) === 'function') return error(h);
 
-				if (!h || !h.errs) return;
+				if (!h || !h.errs) return true;
 				const e = h.errs;
 				for(let k in e) {
 					if (k == '_order') continue;
@@ -138,6 +138,7 @@ $$.dom_init( function($R) {
 						console.error(e);
 					}
 				}
+				return true;
 			},
 			error_dialog_callback: function(){
 				const callback = $obj.data('error_dialog_callback');
