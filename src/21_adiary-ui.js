@@ -49,18 +49,22 @@ $.fn.adiaryDialog = function(opt) {
 		const $span  = $('<span>').addClass('ui-dialog-title')
 			.html( opt.title || this.attr('title') || '&ensp;' );
 		$title.append( $span );
-		const $close = $('<button>').addClass('ui-button').attr({
-			title: 'Close',
-			tabindex: -1
-		});
-		$close.append( $('<span>').addClass('ui-icon ui-icon-closethick') );
-		$title.append( $close );
 		$dialog.append( $title );
 
-		$close.on('click', function(){
-			if (opt.exit) opt.exit();
-			self.adiaryDialogClose();
-		});
+		if (!opt.noClose) {
+			const $close = $('<button>').addClass('ui-button').attr({
+				title: 'Close',
+				tabindex: -1
+			});
+			$close.append( $('<span>').addClass('ui-icon ui-icon-closethick') );
+			$title.append( $close );
+
+			$close.on('click', function(){
+				if (opt.exit) opt.exit();
+				self.adiaryDialogClose();
+			});
+		}
+
 		data.$header = $title;
 	}
 

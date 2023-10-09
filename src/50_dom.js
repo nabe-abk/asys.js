@@ -146,27 +146,26 @@ $$.init(function(){
 
 	function change_select(evt) {
 		const $select = $(evt.target);
-		const val     = $select.val();
+		const _val    = $select.val();
+		if (_val !== dummy)
+			return $select.data('current', _val);
+		
+		const val = $select.data('current');
+		$select.val( val );
 
-		if (val !== dummy)
-			return $select.data('current', val);
-		$select.val( $select.data('current') );
+		const element = { name: 'data', value: val, class: $select.data('class') };
+		const format  = $select.data('format') || '';
+		const ma = format.match(/^(.*)%v(.*)$/);
+		if (ma) {
+			element.before = ma[1];
+			element.after  = ma[2];
+		}
+		self.form_dialog($select.data('title'), element, function(h){
+			const val = h.data;
+			if (val == '' || $select.val() == val) return;
 
-		const $target = $( $select.data('target') ).clone(true).removeAttr('id');
-		$target.find('input').attr('name', 'data');
-
-		self.form_dialog({
-			title: $target.data('title'),
-			elements: [
-				{ type: '*', html: $target }
-			],
-			callback: function(h) {
-				const val = h.data;
-				if (val == '' || $select.val() == val) return;
-
-				self.set_value_on_select( $select, val );
-				$select.data('current', val);
-			}
+			self.set_value_on_select( $select, val );
+			$select.data('current', val);
 		});
 	}
 

@@ -391,3 +391,101 @@ $$.dom_init(function($R){
 	$accordion.adiaryAccordion();
 });
 
+////////////////////////////////////////////////////////////////////////////////
+// custom multiple select
+////////////////////////////////////////////////////////////////////////////////
+$$.dom_init( function($R){
+	$R.findx('select.js-multiple').each(function(idx,dom){
+		const $sel = $(dom);
+		if ($sel.prop('multiple')) return;
+
+		const $multi = $sel.clone(true).prop('multiple', true).css('display', 'none');
+		$sel.data('__multi', $multi);
+
+		$sel.removeAttr('id');
+		$sel.removeAttr('name');
+		$multi.insertAfter($sel);
+		
+		const $opts = $multi.find('option');
+		$opts.each(function(idx,dom){
+			const $opt = $(dom);
+			$opt.prop('selected', $opt.data('selected'));
+		});
+
+		const __change = function(evt){
+			const ary = [];
+			$opts.each(function(idx,dom){
+				const $opt = $(dom);
+				const val  = $opt.val();
+				if (val==='0' || !val)
+					return $opt.prop('selected', false);
+				if ($opt.prop('selected')) ary.push($opt.html());
+			});
+			$sel.find('option.__multi').remove();
+			if (ary.length) {
+				const $opt = $('<option>')
+					.addClass('__multi')
+					.prop('selected', true)
+					.html( ary[0] + (ary[1] ? '...' : '') );
+				$sel.append( $opt );
+			}
+		};
+		__change();
+		$multi.on('change', __change);
+	});
+});
+
+$$.init( function() {
+	this.$body.on('mousedown keydown', 'select.js-multiple', function(evt){
+		const $obj   = $(evt.target);
+		let   $multi = $obj.data('__multi') || $obj;
+
+		const lclass  = $multi.data('label-class');
+		const $dialog = $('<div>').data('title', $multi.data('title'));
+		const val2opt = {};
+
+		$multi.find('option').each(function(idx,dom){
+			const $opt = $(dom);
+			const val  = $opt.val();
+			if (val!=='0' && !val) return;
+
+			val2opt[val] = $opt;
+
+			const $label = $('<label>').html( $opt.html() );
+			if (lclass !=='' && lclass !== undefined) $label.addClass(lclass)
+
+			$label.prepend(
+				$('<input>').attr({
+					type:	'checkbox',
+					value:	val
+				})
+				.prop('checked', $opt.prop('selected'))
+			);
+			$dialog.append( $label );
+		});
+
+		msys.show_dialog($dialog, function(flag) {
+			if (!flag) return;
+
+			let vals = [];
+			let change;
+
+			$dialog.find('input').each(function(idx,dom){
+				const $inp = $(dom);
+				const val  = $inp.val();
+				const $opt = val2opt[val];
+				const flag = $inp.prop('checked');
+
+				if (flag != $opt.prop('selected')) change=true;
+				$opt.prop('selected', flag);
+
+				if (flag) vals.push(val);
+			});
+			if (change) $multi.change();
+		});
+
+		evt.preventDefault();
+		return false;
+	});
+});
+
