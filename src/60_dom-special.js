@@ -65,11 +65,11 @@ $$.dom_init( function($R){
   		}
 
 		// confirm dialog
-		confirm = confirm.toString().replace("%c", count);
-		self.confirm({
-			html: confirm,
+		self.dialog_base({
+			title: self.msg('confirm'),
 			focus: $form.data('focus')
-		}, function(flag) {
+		}, confirm, { c: count }
+		, function(flag) {
 			if (!flag) return;
   			$form.data('_confirm_ok', true);
 			if ($form.data('button')) return $form.data('button').click();

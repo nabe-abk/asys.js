@@ -57,20 +57,30 @@ $$.dialog_base = function(opt, msg, marg, callback) {
 	if (!callback && typeof(marg) === 'function') {
 		callback = marg; marg = null;
 	}
-	const $obj = msg instanceof $ ? msg : (msg.substr(0,1) == '#' && $secure(msg));
 
 	let $div;
-	if (marg || !(msg instanceof $)) {
-		$div = $('<div>');
-		if (marg) {
-			msg = msg.replace(/%([A-Za-z])/g, function(w,m1){ return marg[m1] });
-			msg = msg.replace(/%[A-Za-z]/g, '');
-		}
-		$div.html( msg );
+	if (msg instanceof $) {
+		$div = msg;
+
 	} else {
-		$div = $obj;
+		if (msg instanceof Object) {
+			opt = {...opt, ...msg};
+			msg = msg.html;
+		}
+
+		if (msg && msg.substr(0,1)==='#') {
+			$div = $secure(msg);
+
+		} else {
+			$div = $('<div>');
+			if (marg) {
+				msg = msg.replace(/%([A-Za-z])/g, function(w,m1){ return marg[m1] });
+				msg = msg.replace(/%[A-Za-z]/g, '');
+			}
+			$div.html( msg );
+		}
 	}
-	opt.title ||= $obj && $obj.data('title') || this.msg('confirm');
+	opt.title ||= $div && $div.data('title') || this.msg('confirm');
 
 	if (callback) opt.callback=callback;
 
@@ -86,17 +96,17 @@ $$.show_dialog = function(msg, marg, callback) {
 	}, msg, marg, callback);
 }
 
-$$.confirm = function(msg, marg, callback) {
-	return this.dialog_base({
-		title:	this.msg('confirm')
-	}, msg, marg, callback);
-}
-
 $$.show_error = function(msg, marg, callback) {
 	return this.dialog_base({
 		noClose: true,
 		class:	'error-dialog',
 		title:	this.msg('error')
+	}, msg, marg, callback);
+}
+
+$$.confirm = function(msg, marg, callback) {
+	return this.dialog_base({
+		title:	this.msg('confirm')
 	}, msg, marg, callback);
 }
 
