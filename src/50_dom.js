@@ -144,7 +144,7 @@ $$.init(function(){
 	const self  = this;
 	const dummy = this.js_combo_dummy_val;
 
-	function change_select(evt) {
+	async function change_select(evt) {
 		const $select = $(evt.target);
 		const _val    = $select.val();
 		if (_val !== dummy)
@@ -160,13 +160,15 @@ $$.init(function(){
 			element.before = ma[1];
 			element.after  = ma[2];
 		}
-		self.form_dialog($select.data('title'), element, function(h){
+
+		const h = await self.form_dialog($select.data('title'), element);
+		if (h) {
 			const val = h.data;
 			if (val == '' || $select.val() == val) return;
 
 			self.set_value_on_select( $select, val );
 			$select.data('current', val);
-		});
+		}
 	}
 
 	// initalize

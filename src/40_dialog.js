@@ -2,10 +2,22 @@
 // dialog functions
 //##############################################################################
 $$.dialog = function($div, opt) {
-	let btn = {};
-	btn[ opt.btn_ok || this.msg('ok') ] = function(){
+
+	// create Promise if not set opt.callback
+	if (!opt.callback) {
+		const self=this;
+		return new Promise( (resolve, reject) => {
+			const opt2 = opt ? { ...opt } : {};
+			opt2.callback = (flag) => resolve(flag);
+			self.dialog($div, opt2);
+		});
+	}
+
+	const ok = opt.btn_ok || this.msg('ok');
+	let  btn = {};
+	btn[ ok ] = function(){
 		$div.adiaryDialog('close');
-		if (opt.callback) opt.callback(true);
+		if (opt.callback) opt.callback( $div.prop('tagName')==='FORM' ? $div.parseFormHash() : true );
 	};
 	if (!opt.noClose) {
 		btn[ opt.btn_cancel || this.msg('cancel') ] = function(){
@@ -13,6 +25,13 @@ $$.dialog = function($div, opt) {
 			if (opt.callback) opt.callback(false);
 		};
 	}
+
+	// stop submit by enter and
+	$div.on('keypress', 'input', function(evt) {
+		if (evt.which !== 13) return true;
+		btn[ok]();
+		return false;
+	});
 
 	$div.adiaryDialog({
 		title: opt.title,
@@ -41,7 +60,7 @@ $$.dialog_base = function(opt, msg, marg, callback) {
 	const $obj = msg instanceof $ ? msg : (msg.substr(0,1) == '#' && $secure(msg));
 
 	let $div;
-	if (marg && !$obj) {
+	if (marg || !(msg instanceof $)) {
 		$div = $('<div>');
 		if (marg) {
 			msg = msg.replace(/%([A-Za-z])/g, function(w,m1){ return marg[m1] });
@@ -55,7 +74,7 @@ $$.dialog_base = function(opt, msg, marg, callback) {
 
 	if (callback) opt.callback=callback;
 
-	$$.dialog($div, opt);
+	return this.dialog($div, opt);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -85,6 +104,7 @@ $$.show_error = function(msg, marg, callback) {
 // form dialog
 ////////////////////////////////////////////////////////////////////////////////
 $$.form_dialog = function(title, ele, callback) {
+
 	let $form;
 
 	if (ele instanceof $) {
@@ -132,20 +152,9 @@ $$.form_dialog = function(title, ele, callback) {
 			$form.append( $item );
 		}
 	}
-	const cbfunc = function(flag) {
-		if (flag) return callback($form.parseFormHash());
-	};
 
-	// stop submit by enter
-	$form.on('keypress', 'input', function(evt) {
-		if (evt.which !== 13) return true;
-		$form.adiaryDialogClose();
-		cbfunc(true);
-		return false;
-	});
-
-	this.dialog($form, {
-		title:	title,
-		callback: cbfunc
+	return this.dialog($form, {
+		title: title,
+		callback: callback
 	});
 }
