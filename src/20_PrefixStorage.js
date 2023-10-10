@@ -2,7 +2,6 @@
 // Prefix Storage
 //							(C)2019-2022 nabe@abk
 //##############################################################################
-// PrefixStorage's source is MIT License
 //
 //impliment methods: set(), get(), remove(), clear()
 //
