@@ -312,7 +312,6 @@ $.fn.adiaryDraggable = function(opt) {
 		sy = p.top  - evt.pageY;
 		document.addEventListener('mousemove', move);
 		evt.preventDefault();
-		return;
 	});
 
 	this.on('mouseup', function(evt){
