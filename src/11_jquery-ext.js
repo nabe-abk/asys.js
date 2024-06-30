@@ -104,7 +104,7 @@ $.fn.onSequence = function(_event, _priority, _func) {
 
 			self.on(_event, function(){
 				for(var x in list) {
-					var r = list[x].func.apply(null, arguments);
+					var r = list[x].func.apply(this, arguments);
 					if (!r) return false;	// false break
 				}
 				return true;

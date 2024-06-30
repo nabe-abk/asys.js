@@ -85,14 +85,25 @@ $$.dom_init( function($R){
 ////////////////////////////////////////////////////////////////////////////////
 $$.dom_init( function($R) {
 	const self=this;
-	const func = function($obj){
+	const submit_func = function(evt, $obj){
 		$obj.find('.error').removeClass('error');
 
-		const gen  = $obj.data('generator');
-		const data = (typeof(gen) === 'function') ? gen($obj) : (function(){
-			const $infile = $obj.find('input[type="file"]');
-			return $infile.length ? (new FormData($obj[0])) : $obj.serialize();
-		})();
+		// submitter button
+		let sb = evt.originalEvent.submitter;
+		if (!sb || sb.tagName !== 'BUTTON' || sb.name == '') sb = false;
+
+		// form data
+		let data;
+		const gen = $obj.data('generator');
+		if (typeof(gen) === 'function') {
+			data = gen($obj, evt);
+		} else if ($obj.find('input[type="file"]').length) {
+			data = new FormData($obj[0]);
+			if (sb) data.append(sb.name, sb.value);
+		} else {
+			data = $obj.serialize();
+			if (sb) data += '&' + encodeURIComponent(sb.name) + '=' + encodeURIComponent(sb.value)
+		}
 
 		if ($obj.data('--js-ajax-stop')) return;
 		$obj.data('--js-ajax-stop', true);
@@ -151,7 +162,6 @@ $$.dom_init( function($R) {
 				if ($obj.data('--overlay-obj')) $obj.data('--overlay-obj').remove();
 			}
 		});
-		return false;
 	};
 
 	$R.find('form.js-ajax').onSequence('submit', 100, function(evt) {
@@ -162,7 +172,7 @@ $$.dom_init( function($R) {
 		if (typeof(checker) === 'function') {
 			if (! checker($obj, callback)) return false;
 		}
-		func($obj);
+		submit_func(evt, $obj);
 		return false;
 	});
 });
