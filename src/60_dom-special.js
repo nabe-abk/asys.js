@@ -74,7 +74,7 @@ $$.dom_init( function($R){
   			$form.data('_confirm_ok', true);
 			if ($form.data('button')) return $form.data('button').click();
 
-			$form.submit();
+			$form.submit(evt);
 		});
 		return false;
 	});
@@ -165,14 +165,14 @@ $$.dom_init( function($R) {
 	};
 
 	$R.find('form.js-ajax').onSequence('submit', 100, function(evt) {
-		const $obj = $(evt.target);
-		const callback = function(){ func($obj) };
+		const $obj   = $(evt.target);
+		const submit = function(){ submit_func(evt, $obj) };
 
 		const checker  = $obj.data('checker');
 		if (typeof(checker) === 'function') {
-			if (! checker($obj, callback)) return false;
+			if (! checker($obj, submit)) return false;
 		}
-		submit_func(evt, $obj);
+		submit();
 		return false;
 	});
 });
