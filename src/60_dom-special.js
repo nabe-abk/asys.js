@@ -66,15 +66,16 @@ $$.dom_init( function($R){
 
 		// confirm dialog
 		self.dialog_base({
-			title: self.msg('confirm'),
-			focus: $form.data('focus')
+			title:		self.msg('confirm'),
+			focus:		$form.data('focus'),
+			cancelBtn:	true
 		}, confirm, { c: count }
 		, function(flag) {
 			if (!flag) return;
   			$form.data('_confirm_ok', true);
 			if ($form.data('button')) return $form.data('button').click();
 
-			$form.submit(evt);
+			$form.triggerWithOE(evt.originalEvent);
 		});
 		return false;
 	});
@@ -89,7 +90,7 @@ $$.dom_init( function($R) {
 		$obj.find('.error').removeClass('error');
 
 		// submitter button
-		let sb = evt.originalEvent.submitter;
+		let sb = evt.originalEvent && evt.originalEvent.submitter;
 		if (!sb || sb.tagName !== 'BUTTON' || sb.name == '') sb = false;
 
 		// form data

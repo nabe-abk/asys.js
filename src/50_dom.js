@@ -104,7 +104,7 @@ $$.init(function(){
 $$.init(function(){
 	this.$body.on('change', '.js-on-change-submit', function(evt){
 		const $obj = $(evt.target);
-		$obj.parentsOne('form').submit();
+		$obj.parentsOne('form').trigger('submit');
 	});
 });
 

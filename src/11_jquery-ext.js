@@ -122,6 +122,13 @@ $.fn.onSequence = function(_event, _priority, _func) {
 	return this;
 };
 
+$.fn.triggerWithOE = function(name, oe) {
+	const e   = jQuery.Event(name, { originalEvent: oe });
+	const arg = Array.from(arguments);
+	arg.unshift(e);
+	$.fn.trigger.apply(this, arg);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Drag and Drop emulation by touch event
 ////////////////////////////////////////////////////////////////////////////////
