@@ -51,7 +51,7 @@ $.fn.adiaryDialog = function(opt) {
 		$title.append( $span );
 		$dialog.append( $title );
 
-		if (!opt.noClose) {
+		if (!opt.noExit) {
 			const $close = $('<button>').addClass('ui-button').attr({
 				title: 'Close',
 				tabindex: -1
