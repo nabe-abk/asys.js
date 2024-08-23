@@ -59,8 +59,8 @@ $$.dom_init( function($R){
 		// confirm message
 		let confirm = $form.data('confirm');
 		if (!confirm) return true;
-  		if ($form.data('_confirm_ok')) {
-  			$form.data('_confirm_ok', false);
+  		if ($form.data('--js-check-form-ok')) {
+  			$form.data('--js-check-form-ok', false);
   			return true;
   		}
 
@@ -72,7 +72,7 @@ $$.dom_init( function($R){
 		}, confirm, { c: count }
 		, function(flag) {
 			if (!flag) return;
-  			$form.data('_confirm_ok', true);
+  			$form.data('--js-check-form-ok', true);
 			if ($form.data('button')) return $form.data('button').click();
 
 			$form.triggerWithOE(evt.originalEvent);
@@ -86,41 +86,39 @@ $$.dom_init( function($R){
 ////////////////////////////////////////////////////////////////////////////////
 $$.dom_init( function($R) {
 	const self=this;
-	const submit_func = function(evt, $obj){
-		$obj.find('.error').removeClass('error');
-
-		// submitter button
-		let sb = evt.originalEvent && evt.originalEvent.submitter;
-		if (!sb || sb.tagName !== 'BUTTON' || sb.name == '') sb = false;
+	const submit_func = function(evt, $form){
+		$form.find('.error').removeClass('error');
 
 		// form data
-		let data;
-		const gen = $obj.data('generator');
-		if (typeof(gen) === 'function') {
-			data = gen($obj, evt);
-		} else if ($obj.find('input[type="file"]').length) {
-			data = new FormData($obj[0]);
-			if (sb) data.append(sb.name, sb.value);
-		} else {
-			data = $obj.serialize();
-			if (sb) data += '&' + encodeURIComponent(sb.name) + '=' + encodeURIComponent(sb.value)
+		const gen  = $form.data('generator');
+		let   data = gen ? gen($form, evt) : new FormData($form[0]);
+
+		// submitter button
+		const sb = evt.originalEvent && evt.originalEvent.submitter;
+		if (sb && sb.tagName==='BUTTON' && sb.name!=='')
+			data.append(sb.name, sb.value);
+
+		// submit url-encode
+		if (!gen && !$form.find('input[type="file"]').length)
+			data = new URLSearchParams(data);
+
+		// stop re-entry
+		if (!$form.data('reentry')) {
+			if ($form.data('--js-ajax-stop')) return;
+			$form.data('--js-ajax-stop', true);
+			$form.prop('disabled', true);
 		}
+		if ($form.data('overlay')) $form.data('--overlay-obj', $.adiaryOverlayShow());
 
-		if ($obj.data('--js-ajax-stop')) return;
-		$obj.data('--js-ajax-stop', true);
-		$obj.prop('disabled', true);
-		if ($obj.data('overlay'))
-			$obj.data('--overlay-obj', $.adiaryOverlayShow());
-
-		const start_func = $obj.data('start');
-		const comp_func  = $obj.data('complete');
-		if (typeof(start_func) === 'function') start_func($obj);
+		const start_func = $form.data('start');
+		const comp_func  = $form.data('complete');
+		if (typeof(start_func) === 'function') start_func($form);
 
 		self.send_ajax({
 			data:	data,
 			success: function(h) {
-				const success = $obj.data('success');
-				const url = $obj.data('url');
+				const success = $form.data('success');
+				const url = $form.data('url');
 				if (typeof(success) === 'function') return success(h);
 				if (typeof(success) === 'string' && success != '') {
 					return self.show_dialog(success, function(){
@@ -130,7 +128,7 @@ $$.dom_init( function($R) {
 				if (url) window.location = url;
 			},
 			error: function(err, h) {
-				const error = $obj.data('error');
+				const error = $form.data('error');
 				if (typeof(error) === 'function') return error(h);
 
 				if (!h || !h.errs) return true;
@@ -143,7 +141,7 @@ $$.dom_init( function($R) {
 					const num = ma ? ma[2] : undefined;
 					k = ma ? ma[1] : k;
 					try {
-						let $x = $obj.find('[name="' + k+ '"], [data-name="' + k + '"]');
+						let $x = $form.find('[name="' + k+ '"], [data-name="' + k + '"]');
 						if (num) $x = $($x[num-1]);
 						$x.addClass('error');
 					} catch(e) {
@@ -153,25 +151,27 @@ $$.dom_init( function($R) {
 				return true;
 			},
 			error_dialog_callback: function(){
-				const callback = $obj.data('error_dialog_callback');
+				const callback = $form.data('error_dialog_callback');
 				if (typeof(callback) === 'function') return callback();
 			},
 			complete: function(h) {
-				if (typeof(comp_func) === 'function') comp_func($obj);
-				$obj.data('--js-ajax-stop', false);
-				$obj.prop('disabled', false);
-				if ($obj.data('--overlay-obj')) $obj.data('--overlay-obj').remove();
+				if (typeof(comp_func) === 'function') comp_func($form);
+				if ($form.data('--js-ajax-stop')) {
+					$form.data('--js-ajax-stop', false);
+					$form.prop('disabled', false);
+				}
+				if ($form.data('--overlay-obj')) $form.data('--overlay-obj').remove();
 			}
 		});
 	};
 
 	$R.find('form.js-ajax').onSequence('submit', 100, function(evt) {
-		const $obj   = $(evt.target);
-		const submit = function(){ submit_func(evt, $obj) };
+		const $form   = $(evt.target);
+		const submit = function(){ submit_func(evt, $form) };
 
-		const checker  = $obj.data('checker');
+		const checker  = $form.data('checker');
 		if (typeof(checker) === 'function') {
-			if (! checker($obj, submit)) return false;
+			if (! checker($form, submit)) return false;
 		}
 		submit();
 		return false;

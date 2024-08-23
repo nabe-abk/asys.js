@@ -16,14 +16,14 @@ $$.dialog = function($div, _opt) {
 		});
 	}
 
-	const ok = opt.btn_ok || this.msg('ok');
-	let  btn = {};
-	btn[ ok ] = function(){
+	const ok = opt.ok || this.msg('ok');
+	const btn= {};
+	btn[ok] = function(){
 		$div.adiaryDialog('close');
 		if (opt.callback) opt.callback( $div.prop('tagName')==='FORM' ? $div.parseFormHash() : true );
 	};
 	if (opt.cancelBtn) {
-		btn[ opt.btn_cancel || this.msg('cancel') ] = function(){
+		btn[ opt.cancel || this.msg('cancel') ] = function(){
 			$div.adiaryDialog('close');
 			if (opt.callback) opt.callback(false);
 		};
