@@ -115,6 +115,7 @@ $$.dom_init( function($R) {
 		if (typeof(start_func) === 'function') start_func($form);
 
 		self.send_ajax({
+			url:	$form.attr('action'),
 			data:	data,
 			success: function(h) {
 				const success = $form.data('success');
