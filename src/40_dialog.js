@@ -49,7 +49,10 @@ $$.dialog = function($div, _opt) {
 		},
 		exit: function(){
 			if (opt.callback) opt.callback(false);
-		}
+		},
+		minWidth:  opt.minWidth  || $div.data('min-width'),
+		minHeight: opt.minHeight || $div.data('min-height'),
+		width:     opt.width     || $div.data('width')
 	});
 }
 

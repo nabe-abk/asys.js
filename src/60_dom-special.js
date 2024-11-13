@@ -167,10 +167,10 @@ $$.dom_init( function($R) {
 	};
 
 	$R.find('form.js-ajax').onSequence('submit', 100, function(evt) {
-		const $form   = $(evt.target);
+		const $form  = $(evt.target);
 		const submit = function(){ submit_func(evt, $form) };
 
-		const checker  = $form.data('checker');
+		const checker = $form.data('checker');
 		if (typeof(checker) === 'function') {
 			if (! checker($form, submit)) return false;
 		}
@@ -409,7 +409,9 @@ $$.dom_init(function($R){
 $$.dom_init( function($R){
 	$R.findx('select.js-multiple').each(function(idx,dom){
 		const $sel = $(dom);
-		if ($sel.prop('multiple')) return;
+		if ($sel.prop('multiple')) return;	// if select is multiple, do nothing.
+		// multiple select box is height box style.
+		// $sel copy to after with multiple attribute.
 
 		const $multi = $sel.clone(true).prop('multiple', true).css('display', 'none');
 		$sel.data('__multi', $multi);
@@ -417,7 +419,7 @@ $$.dom_init( function($R){
 		$sel.removeAttr('id');
 		$sel.removeAttr('name');
 		$multi.insertAfter($sel);
-		
+
 		const $opts = $multi.find('option');
 		$opts.each(function(idx,dom){
 			const $opt = $(dom);
@@ -433,13 +435,9 @@ $$.dom_init( function($R){
 					return $opt.prop('selected', false);
 				if ($opt.prop('selected')) ary.push($opt.html());
 			});
-			$sel.find('option.__multi').remove();
 			if (ary.length) {
-				const $opt = $('<option>')
-					.addClass('__multi')
-					.prop('selected', true)
-					.html( ary[0] + (ary[1] ? '...' : '') );
-				$sel.append( $opt );
+				$sel.empty();
+				$sel.append( $('<option>').html( ary[0] + (ary[1] ? '...' : '') ) );
 			}
 		};
 		__change();
@@ -449,11 +447,12 @@ $$.dom_init( function($R){
 
 $$.init( function() {
 	this.$body.on('mousedown keydown', 'select.js-multiple', function(evt){
-		const $obj   = $(evt.target);
-		let   $multi = $obj.data('__multi') || $obj;
+		const $_obj  = $(evt.target);
+		let   $multi = $_obj.data('__multi') || $_obj;
 
 		const lclass  = $multi.data('label-class');
-		const $dialog = $('<div>').data('title', $multi.data('title'));
+		const cdialog = $multi.data('custom-dialog');
+		const $dialog = cdialog ? $(cdialog) : $('<div>').data('title', $multi.data('title'));
 		const val2opt = {};
 
 		$multi.find('option').each(function(idx,dom){
@@ -462,6 +461,7 @@ $$.init( function() {
 			if (val!=='0' && !val) return;
 
 			val2opt[val] = $opt;
+			if (cdialog) return;
 
 			const $label = $('<label>').html( $opt.html() );
 			if (lclass !=='' && lclass !== undefined) $label.addClass(lclass)
@@ -469,10 +469,10 @@ $$.init( function() {
 			$label.prepend(
 				$('<input>').attr({
 					type:	'checkbox',
-					value:	val
+					value:	val,
 				})
 				.prop('checked', $opt.prop('selected'))
-			);
+			).addClass($opt.data('label-class'));
 			$dialog.append( $label );
 		});
 
@@ -487,6 +487,7 @@ $$.init( function() {
 				const val  = $inp.val();
 				const $opt = val2opt[val];
 				const flag = $inp.prop('checked');
+				if (!$opt) return;
 
 				if (flag != $opt.prop('selected')) change=true;
 				$opt.prop('selected', flag);

@@ -6,10 +6,6 @@ let $$ = {
 	name:			'asys',	// global export name
 	Initialize:		true,	// auto run $$.init()
 
-//	DialogWidth:		 -1,	// -1 is auto
-//	DialogMinWidth:		200,
-//	DialogMinHeight:	100,
-
 	DefaultShowSpeed:	300,	// msec
 	TouchDnDTime:		100,	// msec
 	DoubleTapTime:		400,	// msec
