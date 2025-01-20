@@ -413,11 +413,12 @@ $$.dom_init( function($R){
 		// multiple select box is height box style.
 		// $sel copy to after with multiple attribute.
 
-		const $multi = $sel.clone(true).prop('multiple', true).css('display', 'none');
+		const $multi = $sel.clone(true).prop('multiple', true).removeClass('js-multiple').css('display', 'none');
 		$sel.data('__multi', $multi);
 
 		$sel.removeAttr('id');
 		$sel.removeAttr('name');
+		$multi.find('option.js-multiple-ignore').remove();
 		$multi.insertAfter($sel);
 
 		const $opts = $multi.find('option');
@@ -430,14 +431,12 @@ $$.dom_init( function($R){
 			const ary = [];
 			$opts.each(function(idx,dom){
 				const $opt = $(dom);
-				const val  = $opt.val();
-				if (val==='0' || !val)
-					return $opt.prop('selected', false);
 				if ($opt.prop('selected')) ary.push($opt.html());
 			});
 			if (ary.length) {
-				$sel.empty();
-				$sel.append( $('<option>').html( ary[0] + (ary[1] ? '...' : '') ) );
+				const $add = $('<option>').addClass('js-multple-selected').html( ary[0] + (ary[1] ? '...' : '') );
+				$sel.find('.js-multple-selected').remove();
+				$sel.append( $add.prop('selected', true) );
 			}
 		};
 		__change();
@@ -447,8 +446,8 @@ $$.dom_init( function($R){
 
 $$.init( function() {
 	this.$body.on('mousedown keydown', 'select.js-multiple', function(evt){
-		const $_obj  = $(evt.target);
-		let   $multi = $_obj.data('__multi') || $_obj;
+		const $_obj  = $(evt.currentTarget);
+		const $multi = $_obj.data('__multi') || $_obj;
 
 		const lclass  = $multi.data('label-class');
 		const cdialog = $multi.data('custom-dialog');
@@ -457,9 +456,9 @@ $$.init( function() {
 
 		$multi.find('option').each(function(idx,dom){
 			const $opt = $(dom);
-			const val  = $opt.val();
-			if (val!=='0' && !val) return;
+			if ($opt.hasClass('js-multiple-ignore')) return;
 
+			const val  = $opt.val();
 			val2opt[val] = $opt;
 			if (cdialog) return;
 
@@ -479,7 +478,6 @@ $$.init( function() {
 		msys.show_dialog($dialog, function(flag) {
 			if (!flag) return;
 
-			let vals = [];
 			let change;
 
 			$dialog.find('input').each(function(idx,dom){
@@ -487,12 +485,10 @@ $$.init( function() {
 				const val  = $inp.val();
 				const $opt = val2opt[val];
 				const flag = $inp.prop('checked');
-				if (!$opt) return;
+				if ($inp.hasClass('js-multiple-ignore') || !$opt) return;
 
 				if (flag != $opt.prop('selected')) change=true;
 				$opt.prop('selected', flag);
-
-				if (flag) vals.push(val);
 			});
 			if (change) $multi.change();
 		});

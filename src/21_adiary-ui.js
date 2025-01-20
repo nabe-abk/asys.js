@@ -188,7 +188,7 @@ $.fn.adiaryDialogClose = function() {
 	if (data.beforeClose) data.beforeClose.call( null, this );
 
 	if (data.$overlay) data.$overlay.remove();
-	data.$dialog.remove();
+	data.$dialog.detach();
 	if (data.$restore && data.$restore.length) data.$restore.append( this );
 
 	data.$overlay=null;
