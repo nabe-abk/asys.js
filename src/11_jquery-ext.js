@@ -8,38 +8,38 @@ $.fn.showDelay = function(){
 	let args = Array.from(arguments)
 	args.unshift($$.DefaultShowSpeed);
 	return $.fn.show.apply(this, args);
-};
+}
 $.fn.hideDelay = function(){
 	let args = Array.from(arguments);
 	args.unshift($$.DefaultShowSpeed);
 	return $.fn.hide.apply(this, args);
-};
+}
 $.fn.toggleDelay = function(){
 	let args = Array.from(arguments);
 	args.unshift($$.DefaultShowSpeed);
 	return $.fn.toggle.apply(this, args);
-};
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // find dom element including itself
 ////////////////////////////////////////////////////////////////////////////////
 $.fn.findx = function() {
 	return $.fn.filter.apply(this, arguments).add( $.fn.find.apply(this, arguments) );
-};
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // extra find function
 ////////////////////////////////////////////////////////////////////////////////
 $.fn.rootfind = function(sel) {
 	return this.parents().last().find(sel);
-};
+}
 $.fn.parentsOne = function(filter) {
 	return this.parents(filter).first();
-};
+}
 $.fn.existsData = function(name) {
 	const v = this.data(name);
 	return v !== undefined;
-};
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // parse form to hash
@@ -77,7 +77,7 @@ $.fn._parseForm = function(fdmode, cancel) {
 			data[name] = $(dom).val();
 	});
 	return data;
-};
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // any serialize
@@ -120,7 +120,7 @@ $.fn.onSequence = function(_event, _priority, _func) {
 		}));
 	});
 	return this;
-};
+}
 
 $.fn.triggerWithOE = function(name, oe) {
 	const e   = jQuery.Event(name, { originalEvent: oe });
@@ -240,7 +240,7 @@ $.fn.dndEmulation = function(opt){
 	this.each( function(idx, dom){
 		regist_dnd_emulation(dom)
 	});
-};
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // "dbltap" event exclusive mouse
@@ -266,4 +266,4 @@ $.event.special.mydbltap = {
 			mouse = false;
 		}, { passive: true });
 	}
-};
+}

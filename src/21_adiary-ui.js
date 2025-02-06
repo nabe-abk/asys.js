@@ -1,31 +1,20 @@
 //##############################################################################
 // adiary UI
-//							(C)2019-2022 nabe@abk
+//							(C)2019-2025 nabe@abk
 //##############################################################################
-$._adiary_ui = {
-	zindexStart:	1000,
-	dialogs:	[],
-	objs:		[],
-	escHook:	false
-};
 ////////////////////////////////////////////////////////////////////////////////
-// dialog, only modal mode.
+// dialog, use Popover API
 ////////////////////////////////////////////////////////////////////////////////
-$.fn.adiaryDialog = function(opt) {
+$.fn.adiaryDialog = function(opt = {}) {
 	const self = this;
 	if ( opt === 'open' )	return this.adiaryDialogOpen();
 	if ( opt === 'close' )	return this.adiaryDialogClose();
-
-	const useDialog = opt.dialog;
 
 	////////////////////////////////////////////////////////////////////////
 	// init dialog
 	////////////////////////////////////////////////////////////////////////
 	const $win = $(window);
-	const $dialog = $(useDialog ? '<dialog>' : '<div>').addClass('ui-dialog aui-dialog');
-	if (useDialog) {
-		$dialog.attr('method', 'dialog');
-	}
+	const $dialog = $('<dialog>').addClass('ui-dialog').attr('tabindex', -1);
 	const min_w = opt.minWidth  || 200;
 	const min_h = opt.minHeight || 150;
 	let   width = opt.width     || 300;
@@ -35,62 +24,56 @@ $.fn.adiaryDialog = function(opt) {
 		minWidth:	min_w,
 		minHeight:	min_h
 	});
-	if (opt.maxWidth)  $dialog.css('max-width',  opt.maxWidth );
-	if (opt.maxHeight) $dialog.css('max-height', opt.maxHeight);
-	if (opt.dialogClass)
-		$dialog.addClass( opt.dialogClass );
+	if (opt.maxWidth)    $dialog.css('max-width',  opt.maxWidth );
+	if (opt.maxHeight)   $dialog.css('max-height', opt.maxHeight);
+	if (opt.dialogClass) $dialog.addClass( opt.dialogClass );
 
-	const data = this.adiaryUIData('dialog');
+	const data = this.adiaryUIData('dialog', { ...opt });
+	// data.open        = opt.open;
+	// data.close       = opt.close;
+	// data.beforeClose = opt.beforeClose;
+	// data.modal       = opt.modal;
+	data.$dialog = $dialog;
+	data.min_h   = min_h;
+
 	////////////////////////////////////////////////////////////////////////
 	// header
 	////////////////////////////////////////////////////////////////////////
-	{
-		const $title = $('<div>').addClass('ui-dialog-titlebar ui-widget-header');
-		const $span  = $('<span>').addClass('ui-dialog-title')
-			.html( opt.title || this.attr('title') || '&ensp;' );
-		$title.append( $span );
-		$dialog.append( $title );
+	const $title = $('<div>').addClass('ui-dialog-titlebar ui-widget-header');
+	const $span  = $('<span>').addClass('ui-dialog-title')
+		.html( opt.title || this.attr('title') || '&ensp;' );
+	$title.append( $span );
+	$dialog.append( $title );
 
-		if (!opt.noExit) {
-			const $close = $('<button>').addClass('ui-button').attr({
+	// close button
+	if (opt.noExit) {
+		$dialog.on('cancel', function(evt){ return false; });
+	} else {
+		const $close = $('<button>').addClass('ui-button').attr({
 				title: 'Close',
 				tabindex: -1
 			});
-			$close.append( $('<span>').addClass('ui-icon ui-icon-closethick') );
-			$title.append( $close );
+		$close.append( $('<span>').addClass('ui-icon ui-icon-closethick') );
+		$title.append( $close );
+		$close.on('click', function(){
+			if (opt.exit) opt.exit();
+			self.adiaryDialogClose();
+		});
 
-			$close.on('click', function(){
-				if (opt.exit) opt.exit();
-				self.adiaryDialogClose();
-			});
-		}
-
-		data.$header = $title;
+		$dialog.on('keydown', function(evt){
+			if (evt.key == 'Escape') $close.click();
+		});
 	}
+	data.$header = $title;
 
-	////////////////////////////////////////////////////////////////////////
-	// ESC
-	////////////////////////////////////////////////////////////////////////
-	if (!('closeOnEscape' in opt) || opt.closeOnEscape) {
-		const dialogs = $._adiary_ui.dialogs = $.adiaryUIFilterExists( $._adiary_ui.dialogs );
-		dialogs.push( $dialog );
-
-		if (!$._adiary_ui.escHook) {
-			$._adiary_ui.escHook = true;
-			$(window).on('keydown', function(evt){
-				if (evt.which != 27)  return;	// ESC
-
-				const $dialog = $._adiary_ui.dialogs.pop();
-				if ($dialog) $dialog.find('div.ui-dialog-titlebar .ui-icon-closethick').click();
-			});
-		}
-	}
 
 	////////////////////////////////////////////////////////////////////////
 	// main
 	////////////////////////////////////////////////////////////////////////
-	this.addClass('ui-dialog-content');
 	data.$restore = this.parent();
+	data.display  = this.css('display');
+
+	this.addClass('ui-dialog-content');
 	$dialog.append( this );
 	this.show();
 
@@ -117,48 +100,25 @@ $.fn.adiaryDialog = function(opt) {
 	}
 
 	////////////////////////////////////////////////////////////////////////
-	// disable tab indexes
+	// end
 	////////////////////////////////////////////////////////////////////////
-	if (!useDialog) {
-		const tabs = [];
-		data.tabs = tabs;
-		$('a, input, button, select, textarea').each(function(idx,dom){
-			const $obj = $(dom);
-			tabs.push({
-				$obj:	$obj,
-				index:	$obj.attr('tabindex')
-			})
-			$obj.attr('tabindex', -1);
-		});
-		if (document.activeElement) $(document.activeElement).blur();
-	}
-
-	////////////////////////////////////////////////////////////////////////
-	// append dialog obj
-	////////////////////////////////////////////////////////////////////////
-	if (!useDialog) data.$overlay = $('<div>').addClass('ui-overlay aui-overlay');
-	data.$dialog     = $dialog;
-	data.open        = opt.open;
-	data.close       = opt.close;
-	data.beforeClose = opt.beforeClose;
-	data.useDialog   = useDialog;
-	data.min_h       = min_h;
-
 	if (opt && !opt.autoOpen && 'autoOpen' in opt) return this;
 
 	return this.adiaryDialogOpen();
-};
+}
 
 $.fn.adiaryDialogOpen = function() {
 	const data    = this.adiaryUIData('dialog');
-	const $overlay= data.$overlay;
 	const $dialog = data.$dialog;
 	if (!$dialog) throw("Do not open dialog!");
 
-	$overlay.css('visibility', 'hidden');
-	$dialog .css('visibility', 'hidden');
-	this.adiaryUIAppend( data.$overlay );
-	this.adiaryUIAppend( $dialog       );
+	if (data.modal) {
+		$dialog.adiaryShowModal();
+	} else {
+		$('body').append($dialog);
+		$dialog[0].show();
+		$dialog.focus();
+	}
 
 	// set css
 	const $win = $(window);
@@ -175,72 +135,73 @@ $.fn.adiaryDialogOpen = function() {
 	$dialog.adiaryDraggable({
 		handle: '.ui-dialog-titlebar'
 	});
-	$overlay.css('visibility', 'visible');
-	$dialog .css('visibility', 'visible');
 
 	if (data.open) data.open( null, this );
 
 	return this;
-};
+}
 
 $.fn.adiaryDialogClose = function() {
-	const data = this.adiaryUIData('dialog');
+	const data    = this.adiaryUIData('dialog');
+	const $dialog = data.$dialog;
+	if (!$dialog) throw("Do not close dialog!");
+
 	if (data.beforeClose) data.beforeClose.call( null, this );
 
-	if (data.$overlay) data.$overlay.remove();
-	data.$dialog.detach();
-	if (data.$restore && data.$restore.length) data.$restore.append( this );
-
-	data.$overlay=null;
+	if (data.modal) {
+		$dialog.adiaryCloseModal();
+	} else {
+		$dialog[0].close();
+		$dialog.detach();
+	}
 	data.$dialog =null;
 
-	// recovery tab index
-	if (!data.useDialog) {
-		const tabs = data.tabs;
-		for(let i in tabs) {
-			let tab = tabs[i];
-			let idx = tab.index;
-			if (idx === undefined) tab.$obj.removeAttr('tabindex');
-					else   tab.$obj.attr('tabindex', idx)
-		}
+	if (data.$restore && data.$restore.length) {
+		this.css('display', data.display);
+		data.$restore.append( this );
 	}
+
 	if (data.close) data.close.call( null, this );
 
 	return this;
-};
+}
 
 ////////////////////////////////////////////////////////////////////////////////
-// overlay function
+// overlay and modal function
 ////////////////////////////////////////////////////////////////////////////////
-$.adiaryOverlay = function() {
-	return $('<div>').addClass('ui-overlay aui-overlay');
-};
-
-$.adiaryOverlayShow = function() {
-	const $overlay = $.adiaryOverlay();
-	$.adiaryUIAppend($overlay);
+$.adiaryShowOverlay = function() {
+	const $overlay = $('<dialog>').addClass('ui-overlay').attr('tabindex', -1);;
+	$overlay.adiaryShowModal();
+	$overlay.close = function(){
+		this.adiaryCloseModal();
+		return this;
+	}
 	return $overlay;
-};
+}
 
-////////////////////////////////////////////////////////////////////////////////
-// dialog sub functions
-////////////////////////////////////////////////////////////////////////////////
-$.adiaryUIAppend = $.fn.adiaryUIAppend = function($obj) {
-	if (!$obj || $obj.length !== 1) return;
-
-	let   zindex = $._adiary_ui.zindexStart -1;
-	const objs   = $.adiaryUIFilterExists( $._adiary_ui.objs, function($obj){
-		let zi = $obj.adiaryUIData('Append', 'zindex');
-		if (zindex<zi) zindex=zi;
+$.fn.adiaryShowModal = function() {
+	const inert = this.adiaryUIData('modal-inert', []);
+	$('body').children().each((idx,dom) => {
+		if (dom.inert) return;
+		inert.push(dom);
+		dom.inert = true;
 	});
-	objs.push( $obj );
-	$._adiary_ui.objs = objs;
+	this.attr('popover', 'manual');
+	$('body').append(this);
+	this[0].showPopover();
+	this.focus();
 
-	$obj.css('z-index', ++zindex);
-	$obj.adiaryUIData('Append', 'zindex', zindex);
+	return this;
+}
 
-	$('body').append( $obj );
-};
+$.fn.adiaryCloseModal = function() {
+	const inert = this.adiaryUIData('modal-inert');
+	for(const dom of inert) {
+		dom.inert = false;
+	}
+	this[0].close();
+	this.detach();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Progressbar
@@ -271,7 +232,7 @@ $.fn.adiaryProgressbar = function(opt) {
 	if (init || data.change && old != value) data.change  (data.value);
 	if (      data.complete && 100 <= value) data.complete(data.value);
 	return this;
-};
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // accordion
@@ -285,7 +246,7 @@ $.fn.adiaryAccordion = function(opt) {
 		$div.toggleDelay();
 	});
 	$objs.next('div').hide();
-};
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // draggable
@@ -330,18 +291,17 @@ $.fn.adiaryDraggable = function(opt) {
 		});
 		evt.preventDefault();
 	}
-};
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // data function
 ////////////////////////////////////////////////////////////////////////////////
-$.fn.adiaryUIData = function(name, key, val) {
+$.fn.adiaryUIData = function(name, val) {
 	name = 'aui_' + name;
-	const data = this[name] = this[name] || {};
-	if (arguments.length==2) return data[key];
-	if (arguments.length==3) data[key] = val;
+	if (arguments.length==2) this[name] = val;
+	const data = this[name] ||= {};
 	return data;
-};
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // filter function

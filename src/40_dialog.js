@@ -1,11 +1,7 @@
 //##############################################################################
 // dialog functions
 //##############################################################################
-$$.dialog = function($div, _opt) {
-	const opt = Object.assign({
-		modal:	true
-	}, _opt);
-
+$$.dialog = function($div, opt = {}) {
 	// create Promise if not set opt.callback
 	if (!opt.callback) {
 		const self=this;
@@ -30,16 +26,17 @@ $$.dialog = function($div, _opt) {
 	}
 
 	// stop submit by enter and push ok button
-	$div.on('keypress', 'input', function(evt) {
+	const keyfunc = function(evt) {
 		if (evt.which !== 13) return true;
 		btn[ok]();
 		return false;
-	});
+	}
+	$div.on('keypress', 'input', keyfunc);
 
 	$div.adiaryDialog({
-		title: opt.title,
-		modal: opt.modal,
 		noExit: opt.noExit,
+		modal: true,
+		title: opt.title,
 		dialogClass: opt.class,
 		buttons: btn,
 		open: function(){
@@ -49,6 +46,9 @@ $$.dialog = function($div, _opt) {
 		},
 		exit: function(){
 			if (opt.callback) opt.callback(false);
+		},
+		beforeClose: function(){
+			$div.off('keypress', 'input', keyfunc);
 		},
 		minWidth:  opt.minWidth  || $div.data('min-width'),
 		minHeight: opt.minHeight || $div.data('min-height'),
@@ -96,30 +96,25 @@ $$.dialog_base = function(opt, msg, marg, callback) {
 ////////////////////////////////////////////////////////////////////////////////
 // dialogs
 ////////////////////////////////////////////////////////////////////////////////
-$$.show_dialog = function(msg, marg, callback, opt) {
-	return this.dialog_base(
-		Object.assign({
-			noExit: true
-		}, opt),
-		msg, marg, callback);
+$$.show_dialog = function(msg, marg, callback, opt = {}) {
+	return this.dialog_base(opt, msg, marg, callback);
 }
 
 $$.show_error = function(msg, marg, callback, opt) {
-	return this.dialog_base(
-		Object.assign({
-			noExit: true,
+	return this.dialog_base({
 			class:	'error-dialog',
-			title:	this.msg('error')
-		}, opt),
+			title:	this.msg('error'),
+			...opt
+		},
 		msg, marg, callback);
 }
 
 $$.confirm = function(msg, marg, callback, opt) {
-		return this.dialog_base(
-		Object.assign({
+		return this.dialog_base({
 			cancelBtn:	true,
-			title:		this.msg('confirm')
-		}, opt),
+			title:		this.msg('confirm'),
+			...opt
+		},
 		msg, marg, callback);
 }
 

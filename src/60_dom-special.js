@@ -108,8 +108,8 @@ $$.dom_init( function($R) {
 			$form.data('--js-ajax-stop', true);
 			$form.prop('disabled', true);
 		}
-		if ($form.data('overlay')) $form.data('--overlay-obj', $.adiaryOverlayShow());
 
+		const $overlay   = $form.data('overlay') && $.adiaryShowOverlay();
 		const start_func = $form.data('start');
 		const comp_func  = $form.data('complete');
 		if (typeof(start_func) === 'function') start_func($form);
@@ -118,6 +118,7 @@ $$.dom_init( function($R) {
 			url:	$form.attr('action'),
 			data:	data,
 			success: function(h) {
+				if ($overlay) $overlay.close();
 				const success = $form.data('success');
 				const url = $form.data('url');
 				if (typeof(success) === 'function') return success(h);
@@ -129,6 +130,7 @@ $$.dom_init( function($R) {
 				if (url) window.location = url;
 			},
 			error: function(err, h) {
+				if ($overlay) $overlay.close();
 				const error = $form.data('error');
 				if (typeof(error) === 'function') return error(h);
 
@@ -161,7 +163,6 @@ $$.dom_init( function($R) {
 					$form.data('--js-ajax-stop', false);
 					$form.prop('disabled', false);
 				}
-				if ($form.data('--overlay-obj')) $form.data('--overlay-obj').remove();
 			}
 		});
 	};
