@@ -6,10 +6,24 @@
 ////////////////////////////////////////////////////////////////////////////////
 $$.send_ajax = function(opt) {
 	const self=this;
+	//--------------------------------------------------
+	// Create Promise if not set callback functions.
+	//--------------------------------------------------
+	if (!opt.success && !opt.error_dialog_callback) {
+		return new Promise( (resolve, reject) => {
+			self.send_ajax({
+				...opt,
+				success: resolve,
+				error_dialog_callback: reject
+			});
+		});
+	}
 
+	//--------------------------------------------------
+	// main
+	//--------------------------------------------------
 	function ajax_error(err, h) {
 		if (opt.error) if (!opt.error(err, h)) return;
-		if ('dialog' in opt && !opt.dialog) return;
 
 		let msg = '';
 		if (h) {
@@ -36,34 +50,16 @@ $$.send_ajax = function(opt) {
 	const data = opt.data;
 	return $.ajax(opt.url || self.myself || './', {
 		method:		'POST',
-		data:		data.toString() == '[object Object]' ? $.param(data) : data,
+		data:		data.toString() === '[object Object]' ? $.param(data) : data,
 		processData:	false,
 		contentType:	false,
 		dataType:	'json',
-		error:		function(e) { ajax_error(e); },
+		error:		ajax_error,
 		success:	function(h) {
-			if (h.ret != '0' || h._debug) return ajax_error('', h);
+			if (h.ret != '0') return ajax_error('ret!=0', h);
+			if (h._debug)     return ajax_error('_debug', h);
 			if (opt.success) opt.success(h);
 		},
 		complete:	opt.complete,
 	});
 };
-
-////////////////////////////////////////////////////////////////////////////////
-//●promise of ajax
-////////////////////////////////////////////////////////////////////////////////
-$$.send_ajax_promise = function(opt) {
-	const self=this;
-
-	return new Promise( function(resolve, reject) {
-		opt.error_dialog_callback = function(e){
-			reject(e);
-		};
-		if ('dialog' in opt && !opt.dialog) opt.error = opt.error_dialog_callback;
-
-		opt.success = function(h) {
-			resolve(h);
-		};
-		self.send_ajax(opt);
-	});
-}

@@ -2,16 +2,23 @@
 // dialog functions
 //##############################################################################
 $$.dialog = function($div, opt = {}) {
-	// create Promise if not set opt.callback
+	//--------------------------------------------------
+	// Create Promise if not set callback().
+	// This promise is not call reject().
+	//--------------------------------------------------
 	if (!opt.callback) {
 		const self=this;
 		return new Promise( (resolve, reject) => {
-			const opt2 = opt ? { ...opt } : {};
-			opt2.callback = (flag) => resolve(flag);
-			self.dialog($div, opt2);
+			self.dialog($div, {
+				...opt,
+				callback: resolve
+			});
 		});
 	}
 
+	//--------------------------------------------------
+	// main
+	//--------------------------------------------------
 	const ok = opt.ok || this.msg('ok');
 	const btn= {};
 	btn[ok] = function(){
