@@ -124,10 +124,10 @@ $$.dom_init( function($R) {
 				if (typeof(success) === 'function') return success(h);
 				if (typeof(success) === 'string' && success != '') {
 					return self.show_dialog(success, function(){
-						if (url) window.location = url;
+						if (url) location = url;
 					});
 				}
-				if (url) window.location = url;
+				if (url) location = url;
 			},
 			error: function(err, h) {
 				if ($overlay) $overlay.close();
