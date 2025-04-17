@@ -5,11 +5,7 @@
 // popup-help
 ////////////////////////////////////////////////////////////////////////////////
 $$.init(function(){
-	const $popup_div = $('<div>').addClass('popup-block');
-	this.$popup_div  = $popup_div;
-	this.$body.append( $popup_div );
 	const self = this;
-
 	const help = '.help[data-help]';
 	this.$body.on('mouseover', help, {
 		show: function(evt, $obj, $div){
