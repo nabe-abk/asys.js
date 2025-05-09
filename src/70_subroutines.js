@@ -7,30 +7,26 @@
 (function(){
 	const inc = {};
 
-	$$.load_script = function(url, callback) {
-		const x = inc[url];
-		if (x) {
-			if (!callback) return;
-			if (x==1) return callback();
-			// now loading
-			x.on('load', func);
-			return;
-		}
+	$$.load_script = function(url) {
+		return new Promise((resolve, reject) => {
+			const x=inc[url];
+			if (x) {
+				if (x===1) return resolve();
+				// now loading
+				x.on('load', resolve);
+				return;
+			}
 
-		const $s = $(document.createElement('script'));
-		inc[url] = $s;
-		$s.attr('src',   url);
-		$s.attr('async', 'async');
-
-		if (callback) $s.on('load', function(evt){
-			inc[url] = 1;
-			callback(evt);
+			const $s = inc[url]
+				 = $(document.createElement('script'))
+				.attr('src',   url)
+				.prop('async', true);
+			$s.on('load', (evt) => {
+				inc[url] = 1;
+				resolve(evt);
+			});
+			this.$head[0].appendChild( $s[0] );
 		});
-
-		// Do not work and "sync" download by jQuery
-		// this.$head.append( $s );
-
-		this.$head[0].appendChild( $s[0] );
 	}
 })();
 
@@ -50,7 +46,7 @@ $$.tag_esc_br = function(text) {
 $$.tag_esc_amp = function(text) {
 	return this.tag_esc( text.replace(/&/g,'&amp;') );
 }
-$$.tag_decode = function(text) {
+$$.tag_unesc = function(text) {
 	return text
 		.replace(/&apos;/g, "'")
 		.replace(/&quot;/g, '"')
@@ -58,31 +54,21 @@ $$.tag_decode = function(text) {
 		.replace(/&lt;/g, '<')
 		.replace(/&#92;/g, "\\")	// for JSON data
 }
-$$.tag_decode_amp = function(text) {
-	return this.tag_decode(text).replace(/&amp;/g,'&');
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// insert to textarea
-////////////////////////////////////////////////////////////////////////////////
-$$.insert_to_textarea = function(ta, text) {
-	var start = ta.selectionStart;	// current cursol
-	ta.value  = ta.value.substring(0, start) + text + ta.value.substring(start);
-	start += text.length;
-	ta.setSelectionRange(start, start);
+$$.tag_unesc_amp = function(text) {
+	return this.tag_unesc(text).replace(/&amp;/g,'&');
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Cookie
 ////////////////////////////////////////////////////////////////////////////////
 $$.set_cookie = function(name, val) {
-	document.cookie = encodeURIComponent(name) + '=' + encodeURIComponent(val) + '; SameSite=Lax;';
+	document.cookie = encodeURIComponent(name) + '=' + encodeURIComponent(val) + '; SameSite=' + this.SameSite + ';';
 }
 $$.get_cookie = function(name) {
 	const ary = document.cookie.split(/; */);
-	for (var i=0; i<ary.length; i++) {
-		var x = ary[i].split('=', 2);
-		var k = decodeURIComponent( x[0] );
+	for(const v of ary) {
+		const x = v.split('=', 2);
+		const k = decodeURIComponent( x[0] );
 		if (name != k) continue;
 		return decodeURIComponent( x[1] );
 	}
@@ -90,23 +76,22 @@ $$.get_cookie = function(name) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// parse JSON in html comment
+////////////////////////////////////////////////////////////////////////////////
+$$.parse_json_html = function($obj) {
+	const json = $obj.html().replace(/^\s*<!--\s*/, '').replace(/\s*-->\s*$/, '');
+	return JSON.parse(json);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // file size format
 ////////////////////////////////////////////////////////////////////////////////
-$$.size_format = function(s) {
-	function sprintf_3f(n){
-		n = n.toString();
-		const idx = n.indexOf('.');
-		const len = (0<=idx && idx<3) ? 4 : 3;
-		return n.substr(0,len);
-	}
-
-	if (s > 104857600) {	// 100MB
-		s = Math.round(s/1048576);
-		s = s.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1,');
-		return s + ' MB';
-	}
-	if (s > 1023487) return sprintf_3f( s/1048576 ) + ' MB';
-	if (s >     999) return sprintf_3f( s/1024    ) + ' KB';
+$$.format_size = function(s) {
+	if (s > 107374182400)		// 100GB
+		return Math.round(s/1073741824).toLocaleString() + ' GB';
+	if (s > 1047527424) return ( s/1073741824 ).toPrecision(3) + ' GB';
+	if (s >    1022976) return ( s/1048576    ).toPrecision(3) + ' MB';
+	if (s >        999) return ( s/1024       ).toPrecision(3) + ' KB';
 	return s + ' Byte';
 }
 
@@ -121,5 +106,3 @@ $$.float = function(s) {
 	const x = parseFloat(s);
 	return isNaN(x) ? 0 : x;
 }
-
-

@@ -170,7 +170,7 @@ $.fn.adiaryDialogClose = function() {
 // overlay and modal function
 ////////////////////////////////////////////////////////////////////////////////
 $.adiaryShowOverlay = function() {
-	const $overlay = $('<dialog>').addClass('ui-overlay').attr('tabindex', -1);;
+	const $overlay = $('<dialog>').addClass('ui-overlay').attr('tabindex', -1);
 	$overlay.adiaryShowModal();
 	$overlay.close = function(){
 		this.adiaryCloseModal();

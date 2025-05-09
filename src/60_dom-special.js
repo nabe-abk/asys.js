@@ -28,8 +28,6 @@
 
 		initialized = true;
 	};
-
-	$$.init($$.dom_init);
 })();
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -445,8 +443,7 @@ $$.dom_init( function($R){
 	});
 });
 
-$$.init( function() {
-	this.$body.on('mousedown keydown', 'select.js-multiple', function(evt){
+	$$.$body.on('mousedown keydown', 'select.js-multiple', function(evt){
 		const $_obj  = $(evt.currentTarget);
 		const $multi = $_obj.data('__multi') || $_obj;
 
@@ -476,7 +473,7 @@ $$.init( function() {
 			$dialog.append( $label );
 		});
 
-		msys.show_dialog($dialog, function(flag) {
+		$$.show_dialog($dialog, function(flag) {
 			if (!flag) return;
 
 			let change;
@@ -497,5 +494,3 @@ $$.init( function() {
 		evt.preventDefault();
 		return false;
 	});
-});
-
