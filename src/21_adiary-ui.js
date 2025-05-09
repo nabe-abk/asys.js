@@ -303,17 +303,3 @@ $.fn.adiaryUIData = function(name, val) {
 	return data;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// filter function
-////////////////////////////////////////////////////////////////////////////////
-$.adiaryUIFilterExists = function($objs, callback) {
-	const $ary  = [];
-	const $body = $('body');
-
-	for(let k in $objs) {
-		if (! $body.find($objs[k]).length) continue;
-		$ary.push($objs[k]);
-		if (callback) callback($objs[k]);
-	}
-	return $ary;
-}

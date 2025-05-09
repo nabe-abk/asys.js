@@ -82,7 +82,7 @@ $$.dialog_base = function(opt, msg, marg, callback) {
 		}
 
 		if (msg && msg.substr(0,1)==='#') {
-			$div = $secure(msg);
+			$div = $.secure(msg);
 
 		} else {
 			$div = $('<div>');

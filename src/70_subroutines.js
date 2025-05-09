@@ -79,6 +79,7 @@ $$.get_cookie = function(name) {
 // parse JSON in html comment
 ////////////////////////////////////////////////////////////////////////////////
 $$.parse_json_html = function($obj) {
+	if (!$obj.length) return;
 	const json = $obj.html().replace(/^\s*<!--\s*/, '').replace(/\s*-->\s*$/, '');
 	return JSON.parse(json);
 }

@@ -310,7 +310,7 @@ $$.dom_init( function($R){
 			if (!$obj.length) return;
 			tar = $obj.data('target');
 		}
-		const $target = $(tar);
+		const $target = $.secure(tar);
 		if (!$target.length) return false;
 
 		// save switch status

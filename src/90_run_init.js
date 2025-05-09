@@ -2,10 +2,10 @@
 // run init for develop mode
 //##############################################################################
 (function(){
-	const $vars = $('#asys-vars');
+	const $vars = $.secure('#asys-vars');
 	const vars  = $$.vars = ($vars.length==1) ? $$.parse_json_html($vars) : {};
 
-	const $msgs = $('#asys-msgs');
+	const $msgs = $.secure('#asys-msgs');
 	if ($msgs.length==1) {
 		const data = $$.parse_json_html($msgs);
 		$$.set_msg(data);

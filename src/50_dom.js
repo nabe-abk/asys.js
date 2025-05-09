@@ -29,7 +29,7 @@ $$.$body.on('click', 'button[data-href]', function(evt){
 ////////////////////////////////////////////////////////////////////////////////
 $$.$body.on('click', 'button.js-set-value[data-target]', function(evt){
 	const $btn = $(evt.target);
-	$($btn.data('target')).val( $btn.attr('value') );
+	$.secure($btn.data('target')).val( $btn.attr('value') );
 });
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -49,7 +49,7 @@ $$.$body.on('keypress', 'input.no-enter-submit, form.no-enter-submit input', fun
 //
 $$.$body.on('click', 'button.js-file-btn', function(evt) {
 	const $obj = $(evt.target);
-	const $tar = $($obj.data('target'));
+	const $tar = $.secure($obj.data('target'));
 	if (! $tar.length ) return;
 
 	if ($tar.data('target') && !$tar.data('--regist-change-evt')) {
@@ -69,7 +69,7 @@ $$.$body.on('click', 'button.js-file-btn', function(evt) {
 ////////////////////////////////////////////////////////////////////////////////
 $$.$body.on('click', 'button.js-reset-btn', function(evt) {
 	const $obj = $(evt.target);
-	const $tar = $($obj.data('target'));
+	const $tar = $.secure($obj.data('target'));
 	if (!$tar.length || $tar.val()=='') return;
 	$tar.val('').change();
 });
@@ -78,9 +78,9 @@ $$.$body.on('click', 'button.js-reset-btn', function(evt) {
 // check all
 ////////////////////////////////////////////////////////////////////////////////
 $$.$body.on('change', 'input.js-checked', function(evt){
-	const $obj   = $(evt.target);
-	const target = $obj.data( 'target' );
-	$(target).prop("checked", $obj.is(":checked"));
+	const $obj = $(evt.target);
+	const $tar = $.secure($obj.data('target'));
+	$tar.prop("checked", $obj.is(":checked"));
 });
 
 ////////////////////////////////////////////////////////////////////////////////
