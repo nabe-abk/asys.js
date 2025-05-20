@@ -90,6 +90,13 @@ $$.$body.on('change', '.js-on-change-submit', function(evt){
 	const $obj = $(evt.target);
 	$obj.parentsOne('form').trigger('submit');
 });
+// reset for browser-back
+$(window).on('pageshow', evt => {
+	const ent = performance.getEntriesByType("navigation")[0];
+	if (ent.type == 'back_foward' || evt.originalEvent.persisted) {
+		$$.$body.find('form:has(.js-on-change-submit)').each((idx,dom) => dom.reset());
+	}
+})
 
 ////////////////////////////////////////////////////////////////////////////////
 // line click for check on table
